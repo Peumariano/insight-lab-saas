@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise de Insights - Insight Lab</title>
+    <link rel="stylesheet" href="/css/form.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">
+            <i class="fas fa-arrow-left"></i>
+            Voltar
+        </a>
+
+        <div class="form-wrapper">
+            <div class="form-header">
+                <div class="logo">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Insight Lab</span>
+                </div>
+                <h1>Análise de Dados Educacionais</h1>
+                <p>Responda às perguntas abaixo para gerar insights personalizados com IA</p>
+            </div>
+
+            <form id="insightForm">
+                <div class="question-group">
+                    <div class="question-number">
+                        <span>01</span>
+                    </div>
+                    <div class="question-content">
+                        <label for="q1">
+                            <i class="fas fa-graduation-cap"></i>
+                            Quais disciplinas apresentam as maiores taxas de reprovação?
+                        </label>
+                        <p class="question-hint">Descreva as disciplinas e os padrões de dificuldade observados</p>
+                        <textarea 
+                            id="q1" 
+                            name="q1" 
+                            rows="4" 
+                            placeholder="Ex: Matemática apresenta 35% de reprovação, principalmente em álgebra e geometria..."
+                            required
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="question-group">
+                    <div class="question-number">
+                        <span>02</span>
+                    </div>
+                    <div class="question-content">
+                        <label for="q2">
+                            <i class="fas fa-user-graduate"></i>
+                            Os alunos se beneficiariam de intervenções pedagógicas personalizadas?
+                        </label>
+                        <p class="question-hint">Indique quais tipos de intervenções seriam mais eficazes</p>
+                        <textarea 
+                            id="q2" 
+                            name="q2" 
+                            rows="4" 
+                            placeholder="Ex: Sim, alunos com dificuldade em leitura necessitam de reforço individualizado..."
+                            required
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="question-group">
+                    <div class="question-number">
+                        <span>03</span>
+                    </div>
+                    <div class="question-content">
+                        <label for="q3">
+                            <i class="fas fa-calendar-check"></i>
+                            Quais fatores podem estar contribuindo para a falta de frequência?
+                        </label>
+                        <p class="question-hint">Identifique os principais motivos de ausência dos alunos</p>
+                        <textarea 
+                            id="q3" 
+                            name="q3" 
+                            rows="4" 
+                            placeholder="Ex: Transporte público precário, questões familiares, falta de motivação..."
+                            required
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="question-group">
+                    <div class="question-number">
+                        <span>04</span>
+                    </div>
+                    <div class="question-content">
+                        <label for="q4">
+                            <i class="fas fa-users"></i>
+                            Os alunos apresentam padrões de comportamento problemáticos?
+                        </label>
+                        <p class="question-hint">Descreva questões de disciplina ou dificuldades sociais observadas</p>
+                        <textarea 
+                            id="q4" 
+                            name="q4" 
+                            rows="4" 
+                            placeholder="Ex: Casos de bullying identificados, dificuldade de concentração em sala..."
+                            required
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="question-group">
+                    <div class="question-number">
+                        <span>05</span>
+                    </div>
+                    <div class="question-content">
+                        <label for="q5">
+                            <i class="fas fa-school"></i>
+                            O ambiente escolar influencia o engajamento dos alunos?
+                        </label>
+                        <p class="question-hint">Avalie clima, infraestrutura e relações interpessoais</p>
+                        <textarea 
+                            id="q5" 
+                            name="q5" 
+                            rows="4" 
+                            placeholder="Ex: Infraestrutura adequada, mas falta de espaços de convivência..."
+                            required
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        <span class="btn-text">
+                            <i class="fas fa-sparkles"></i>
+                            Gerar Insights com IA
+                        </span>
+                        <span class="btn-loader">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            Analisando...
+                        </span>
+                    </button>
+                </div>
+            </form>
+
+            <div id="results" class="results hidden">
+                <div class="results-header">
+                    <i class="fas fa-lightbulb"></i>
+                    <h2>Insights Gerados</h2>
+                </div>
+                <div id="insights" class="insights-container"></div>
+                <div class="results-actions">
+                    <button class="btn-secondary" onclick="window.print()">
+                        <i class="fas fa-print"></i>
+                        Imprimir
+                    </button>
+                    <button class="btn-secondary" onclick="copyInsights()">
+                        <i class="fas fa-copy"></i>
+                        Copiar
+                    </button>
+                    <button class="btn-primary" onclick="location.reload()">
+                        <i class="fas fa-redo"></i>
+                        Nova Análise
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/form.js"></script>
+</body>
+</html>
