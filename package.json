@@ -17,7 +17,7 @@
   "author": "Pedro Mariano",
   "license": "MIT",
   "dependencies": {
-    "openai": "^4.47.1"
+    "openai": "^6.21.0"
   },
   "devDependencies": {
     "vercel": "^33.0.0"
