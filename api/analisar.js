@@ -63,7 +63,7 @@ Use uma linguagem clara e profissional, organizando os insights em seções bem 
 
     // Call OpenAI API
     const response = await openai.chat.completions.create({
-      model: "openai/gpt-oss-20b",
+      model: "gpt-4.1-mini",
       messages: [
         { 
           role: "system", 
