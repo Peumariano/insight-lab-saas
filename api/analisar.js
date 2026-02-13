@@ -88,8 +88,8 @@ Use uma linguagem clara e profissional, organizando os insights em seções bem 
           content: prompt 
         }
       ],
-      max_tokens: 1500,
-      temperature: 0.7,
+      max_tokens: 15000,
+      temperature: 3.7,
     });
 
     console.log('Resposta recebida da OpenAI');

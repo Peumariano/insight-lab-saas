@@ -60,53 +60,162 @@ function displayInsights(insights) {
 }
 
 function formatInsights(text) {
-  // Split text into sections
-  const sections = text.split('\n\n').filter(section => section.trim());
+  // Remove markdown code blocks se existirem
+  text = text.replace(/```[\s\S]*?```/g, '');
+  
+  // Divide o texto em seções principais
+  const sections = text.split(/(?=##|\*\*\d+\.|\d+\.\s+\*\*)/g).filter(s => s.trim());
   
   let html = '';
+  let insightIndex = 0;
+  
+  // Ícones para diferentes tipos de seções
+  const icons = {
+    'análise': 'fa-chart-line',
+    'achados': 'fa-search',
+    'padrões': 'fa-project-diagram',
+    'recomendações': 'fa-lightbulb',
+    'ações': 'fa-tasks',
+    'prioridades': 'fa-flag',
+    'indicadores': 'fa-chart-bar',
+    'monitoramento': 'fa-eye',
+    'intervenções': 'fa-hand-holding-heart',
+    'frequência': 'fa-calendar-check',
+    'comportamento': 'fa-users',
+    'ambiente': 'fa-school',
+    'default': 'fa-info-circle'
+  };
+  
+  // Cores para diferentes seções
+  const colors = ['primary', 'success', 'info', 'warning', 'danger'];
   
   sections.forEach((section, index) => {
-    // Check if section is a heading (starts with number or **text**)
-    if (section.match(/^\d+\.|^##|^\*\*/)) {
-      const lines = section.split('\n');
-      const title = lines[0].replace(/^\d+\.\s*/, '').replace(/^##\s*/, '').replace(/\*\*/g, '');
-      const content = lines.slice(1).join('\n');
-      
-      html += `
-        <div class="insight">
-          <h3><i class="fas fa-lightbulb"></i> ${title}</h3>
-          ${formatContent(content)}
-        </div>
-      `;
+    if (!section.trim()) return;
+    
+    // Extrai título da seção
+    let title = '';
+    let content = section;
+    
+    // Detecta diferentes formatos de título
+    const titleMatch = section.match(/^##\s*(.+?)[\n\r]/m) || 
+                      section.match(/^\*\*(.+?)\*\*/m) ||
+                      section.match(/^\d+\.\s*\*\*(.+?)\*\*/m) ||
+                      section.match(/^💡\s*(.+?)[\n\r]/m) ||
+                      section.match(/^#\s*(.+?)[\n\r]/m);
+    
+    if (titleMatch) {
+      title = titleMatch[1].trim();
+      content = section.replace(titleMatch[0], '').trim();
     } else {
-      html += `
-        <div class="insight">
-          ${formatContent(section)}
-        </div>
-      `;
+      // Se não tem título claro, usa as primeiras palavras
+      const firstLine = section.split('\n')[0];
+      if (firstLine.length < 100) {
+        title = firstLine.replace(/^\d+\.\s*/, '').replace(/^[-*]\s*/, '').trim();
+        content = section.split('\n').slice(1).join('\n').trim();
+      } else {
+        title = `Insight ${index + 1}`;
+      }
     }
+    
+    // Remove números e formatação do título
+    title = title.replace(/^\d+\.\s*/, '').replace(/\*\*/g, '').trim();
+    
+    // Determina o ícone baseado no título
+    let icon = icons.default;
+    const titleLower = title.toLowerCase();
+    for (const [key, value] of Object.entries(icons)) {
+      if (titleLower.includes(key)) {
+        icon = value;
+        break;
+      }
+    }
+    
+    // Determina a cor
+    const colorClass = colors[insightIndex % colors.length];
+    insightIndex++;
+    
+    // Formata o conteúdo
+    let formattedContent = formatContent(content);
+    
+    // Cria o HTML do insight
+    html += `
+      <div class="insight insight-${colorClass}">
+        <div class="insight-header">
+          <div class="insight-icon">
+            <i class="fas ${icon}"></i>
+          </div>
+          <h3>${title}</h3>
+        </div>
+        <div class="insight-content">
+          ${formattedContent}
+        </div>
+      </div>
+    `;
   });
   
-  return html || `<div class="insight"><p>${text}</p></div>`;
+  // Se não conseguiu dividir em seções, mostra tudo como um insight único
+  if (!html) {
+    html = `
+      <div class="insight insight-primary">
+        <div class="insight-header">
+          <div class="insight-icon">
+            <i class="fas fa-lightbulb"></i>
+          </div>
+          <h3>Análise Completa</h3>
+        </div>
+        <div class="insight-content">
+          ${formatContent(text)}
+        </div>
+      </div>
+    `;
+  }
+  
+  return html;
 }
 
 function formatContent(text) {
   if (!text.trim()) return '';
   
-  // Convert markdown-style lists to HTML
+  // Remove múltiplos line breaks
+  text = text.replace(/\n{3,}/g, '\n\n');
+  
+  // Converte listas markdown em HTML
   let formatted = text
-    .replace(/^\* (.+)/gm, '<li>$1</li>')
-    .replace(/^- (.+)/gm, '<li>$1</li>');
+    // Listas com asterisco
+    .replace(/^\*\s+(.+)$/gm, '<li>$1</li>')
+    // Listas com hífen
+    .replace(/^-\s+(.+)$/gm, '<li>$1</li>')
+    // Listas numeradas
+    .replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
   
-  // Wrap lists in ul tags
-  if (formatted.includes('<li>')) {
-    formatted = '<ul>' + formatted + '</ul>';
-  } else {
-    formatted = `<p>${formatted}</p>`;
-  }
+  // Agrupa itens de lista consecutivos
+  formatted = formatted.replace(/(<li>.*?<\/li>\n?)+/g, (match) => {
+    return '<ul>' + match + '</ul>';
+  });
   
-  // Bold text
-  formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Converte parágrafos (texto que não está em listas)
+  formatted = formatted.split('\n\n').map(paragraph => {
+    paragraph = paragraph.trim();
+    if (!paragraph) return '';
+    
+    // Se já é uma lista ou HTML, retorna como está
+    if (paragraph.startsWith('<ul>') || paragraph.startsWith('<ol>') || paragraph.startsWith('<li>')) {
+      return paragraph;
+    }
+    
+    // Remove asteriscos de negrito markdown e adiciona tags HTML
+    paragraph = paragraph.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    
+    // Se tem menos de 10 palavras e termina com :, é um subtítulo
+    if (paragraph.split(' ').length < 10 && paragraph.endsWith(':')) {
+      return `<h4 style="color: var(--gray-900); font-weight: 600; margin: 1.5rem 0 0.75rem 0; font-size: 1.1rem;">${paragraph}</h4>`;
+    }
+    
+    return `<p>${paragraph}</p>`;
+  }).join('\n');
+  
+  // Remove quebras de linha extras
+  formatted = formatted.replace(/\n{2,}/g, '\n');
   
   return formatted;
 }
