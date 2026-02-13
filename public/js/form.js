@@ -11,8 +11,21 @@ form.addEventListener('submit', async (e) => {
   const respostas = {};
   
   formData.forEach((value, key) => {
-    respostas[key] = value;
+    // Remove espaços extras e valida
+    const trimmedValue = value.trim();
+    if (trimmedValue) {
+      respostas[key] = trimmedValue;
+    }
   });
+
+  // Validar se tem pelo menos 3 respostas preenchidas
+  const numRespostas = Object.keys(respostas).length;
+  if (numRespostas < 3) {
+    alert('Por favor, preencha pelo menos 3 campos antes de gerar insights.');
+    return;
+  }
+
+  console.log('Enviando respostas:', respostas);
 
   // Show loading state
   submitBtn.classList.add('loading');
@@ -28,21 +41,48 @@ form.addEventListener('submit', async (e) => {
       body: JSON.stringify(respostas)
     });
 
+    console.log('Status da resposta:', response.status);
+
+    // Tenta ler a resposta como JSON
+    const data = await response.json();
+    console.log('Dados recebidos:', data);
+
     if (!response.ok) {
-      throw new Error('Erro ao processar a análise');
+      // Mostra erro específico da API
+      const errorMessage = data.message || data.error || 'Erro ao processar a análise';
+      throw new Error(errorMessage);
     }
 
-    const data = await response.json();
+    // Verifica se tem insights
+    if (!data.insights) {
+      throw new Error('Nenhum insight foi gerado. Tente novamente.');
+    }
     
     // Display results
     displayInsights(data.insights);
     
     // Scroll to results
-    resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => {
+      resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
     
   } catch (error) {
-    console.error('Erro:', error);
-    alert('Erro ao gerar insights. Por favor, tente novamente.');
+    console.error('Erro completo:', error);
+    
+    // Mensagem de erro mais amigável
+    let errorMsg = 'Erro ao gerar insights. ';
+    
+    if (error.message.includes('API Key')) {
+      errorMsg += 'Problema com a configuração da API. Entre em contato com o suporte.';
+    } else if (error.message.includes('quota') || error.message.includes('limit')) {
+      errorMsg += 'Limite de uso atingido. Tente novamente mais tarde.';
+    } else if (error.message.includes('network') || error.message.includes('fetch')) {
+      errorMsg += 'Problema de conexão. Verifique sua internet.';
+    } else {
+      errorMsg += error.message || 'Tente novamente.';
+    }
+    
+    alert(errorMsg);
   } finally {
     // Reset button state
     submitBtn.classList.remove('loading');

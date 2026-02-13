@@ -34,11 +34,33 @@ module.exports = async function handler(req, res) {
     const respostas = req.body;
 
     // Validate input
-    if (!respostas || Object.keys(respostas).length === 0) {
-      return res.status(400).json({ error: 'Dados inválidos' });
+    if (!respostas) {
+      console.error('Body vazio recebido');
+      return res.status(400).json({ 
+        error: 'Dados inválidos',
+        message: 'Nenhum dado foi enviado no corpo da requisição'
+      });
     }
 
-    console.log('Recebidas respostas:', Object.keys(respostas));
+    if (typeof respostas !== 'object') {
+      console.error('Body não é um objeto:', typeof respostas);
+      return res.status(400).json({ 
+        error: 'Dados inválidos',
+        message: 'Formato de dados incorreto'
+      });
+    }
+
+    const keys = Object.keys(respostas);
+    if (keys.length === 0) {
+      console.error('Objeto vazio recebido');
+      return res.status(400).json({ 
+        error: 'Dados inválidos',
+        message: 'Nenhuma resposta foi enviada. Preencha pelo menos um campo.'
+      });
+    }
+
+    console.log('Recebidas respostas:', keys);
+    console.log('Número de respostas:', keys.length);
 
     // Initialize OpenAI
     const openai = new OpenAI({
@@ -88,8 +110,8 @@ Use uma linguagem clara e profissional, organizando os insights em seções bem 
           content: prompt 
         }
       ],
-      max_tokens: 15000,
-      temperature: 3.7,
+      max_tokens: 1500,
+      temperature: 0.7,
     });
 
     console.log('Resposta recebida da OpenAI');
