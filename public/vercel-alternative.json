@@ -1,0 +1,14 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    },
+    {
+      "source": "/pages/form.html",
+      "destination": "/pages/form.html"
+    }
+  ],
+  "cleanUrls": true,
+  "trailingSlash": false
+}

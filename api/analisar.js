@@ -1,5 +1,4 @@
 const OpenAI = require('openai').default;
-import 'dotenv/config';
 
 module.exports = async function handler(req, res) {
   // Enable CORS
