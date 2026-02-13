@@ -1,12 +1,8 @@
-import OpenAI from 'openai';
+const OpenAI = require('openai').default;
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Enable CORS
-  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
@@ -14,60 +10,59 @@ export default async function handler(req, res) {
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
   );
 
-  // Handle preflight request
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+    return res.status(200).end();
   }
 
-  // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ 
+        error: 'API Key não configurada',
+        message: 'Configure OPENAI_API_KEY nas variáveis de ambiente'
+      });
+    }
+
     const respostas = req.body;
 
-    // Validate input
     if (!respostas || Object.keys(respostas).length === 0) {
       return res.status(400).json({ error: 'Dados inválidos' });
     }
 
-    // Create prompt with user responses
-    const prompt = `
-Analise as seguintes respostas sobre dados educacionais e forneça insights detalhados e acionáveis:
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
 
-**1. Disciplinas com maiores taxas de reprovação:**
+    const prompt = `
+Analise as seguintes respostas sobre dados educacionais e forneça insights detalhados:
+
+1. Disciplinas com maiores taxas de reprovação:
 ${respostas.q1 || 'Não informado'}
 
-**2. Necessidade de intervenções pedagógicas personalizadas:**
+2. Necessidade de intervenções pedagógicas:
 ${respostas.q2 || 'Não informado'}
 
-**3. Fatores que contribuem para falta de frequência:**
+3. Fatores que contribuem para falta de frequência:
 ${respostas.q3 || 'Não informado'}
 
-**4. Padrões de comportamento problemáticos:**
+4. Padrões de comportamento:
 ${respostas.q4 || 'Não informado'}
 
-**5. Influência do ambiente escolar no engajamento:**
+5. Influência do ambiente escolar:
 ${respostas.q5 || 'Não informado'}
 
-Por favor, forneça uma análise estruturada com:
-- Principais achados e padrões identificados
-- Recomendações específicas e práticas
-- Ações prioritárias a serem implementadas
-- Indicadores para monitoramento
-
-Use uma linguagem clara e profissional, organizando os insights em seções bem definidas.
+Forneça insights estruturados com recomendações práticas.
 `;
 
-    // Call OpenAI API
     const response = await openai.chat.completions.create({
-      model: "gpt-4.1-mini",
+      model: "gpt-4o-mini",
       messages: [
         { 
           role: "system", 
-          content: "Você é um analista educacional especializado em dados escolares. Forneça insights profissionais, práticos e baseados em evidências. Seja específico e objetivo nas recomendações."
+          content: "Você é um analista educacional. Forneça insights profissionais e objetivos."
         },
         { 
           role: "user", 
@@ -79,23 +74,14 @@ Use uma linguagem clara e profissional, organizando os insights em seções bem 
     });
 
     const insights = response.choices[0].message.content.trim();
-
     return res.status(200).json({ insights });
 
   } catch (error) {
-    console.error('Erro ao analisar as respostas:', error);
+    console.error('Erro:', error);
     
-    // Check if it's an OpenAI API error
-    if (error.response) {
-      return res.status(error.response.status).json({
-        error: 'Erro ao processar com a API do OpenAI',
-        details: error.response.data
-      });
-    }
-
     return res.status(500).json({
-      error: 'Erro ao processar as respostas',
+      error: 'Erro ao processar',
       message: error.message
     });
   }
-}
+};

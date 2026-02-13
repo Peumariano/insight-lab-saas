@@ -2,8 +2,7 @@
   "name": "insight-lab-saas",
   "version": "2.0.0",
   "description": "Plataforma SaaS para análise de dados educacionais com IA",
-  "type": "module",
-  "scripts": {
+   "scripts": {
     "dev": "vercel dev",
     "build": "echo 'Build completed'",
     "deploy": "vercel --prod"
